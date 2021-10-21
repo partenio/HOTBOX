@@ -23,14 +23,14 @@ file = f'C:\\Users\\Partenio\\PycharmProjects\\pythonProject1\\Excel\\{date_time
 
 # creating the sheet.
 wb, sheet = create_load_workbook(file)
-blank_row = 2
+blank_row = 3
 
 # configure the A/D values to read the thermocouples in degrees C.
 aAddresses = [9000, 9002, 9004, 9006, 9008, 9010, 9012, 9014, 9016, 9018, 9020, 9022, 9024, 9026,
               9300, 9302, 9304, 9306, 9308, 9310, 9312, 9314, 9316, 9318, 9320, 9322, 9324, 9326]  # address to write
 aDataTypes = [ljm.constants.UINT32 for _ in aAddresses]
 aValues = [24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
-           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  # [values to output]
+           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  # [values to output]
 numFrames = len(aAddresses)
 ljm.eWriteAddresses(handle, numFrames, aAddresses, aDataTypes, aValues)
 
@@ -44,9 +44,11 @@ for i in range(numFrames):
 write_value = 0
 TEMP_average_HOT = 0.0
 TEMP_average_COLD = 0.0
+time_constant = time.time()
+execution_time = 5  # time for the program to run, change second number to the desire time in minutes.
 # where the values are read, write, print and calculate
 
-while True:
+while time.time() < time_constant + execution_time:
 
     # set the inputs to read: HOTBOX
     aAddresses = [7000, 7002, 7004, 7006, 7008, 7010, 7012]  # [see addresses in https://labjack.com/support/software/api/modbus/modbus-map]
@@ -69,7 +71,7 @@ while True:
     # write the PID calculate value in the DAC of the Data logger
     aAddresses = [1000, 1002]  # [DAC0]
     aDataTypes = [ljm.constants.FLOAT32 for _ in aAddresses]  # data type
-    aValues = [write_value]  # [write of output]
+    aValues = [write_value, 5]  # [write of output]
     numFrames = len(aAddresses)
     ljm.eWriteAddresses(handle, numFrames, aAddresses, aDataTypes, aValues)
 
@@ -105,9 +107,9 @@ while True:
     # Exel write data
     data = results_HOT + results_COLD
     print(blank_row, data)
-    sheet.cell(blank_row, 1).value = blank_row - 1
+    sheet.cell(blank_row, 1).value = blank_row - 2
     for i, dat in enumerate(data):
-        offset = 1 if i > 3 else 0
+        offset = 1 if i > 6 else 0
         sheet.cell(blank_row, i + offset + 2).value = dat
     wb.save(file)
     blank_row += 1
