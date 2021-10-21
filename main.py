@@ -24,6 +24,7 @@ file = f'C:\\Users\\Partenio\\PycharmProjects\\pythonProject1\\Excel\\{date_time
 # creating the sheet.
 wb, sheet = create_load_workbook(file)
 blank_row = 3
+time_date = [datetime.fromtimestamp(time.time())]
 
 # configure the A/D values to read the thermocouples in degrees C.
 aAddresses = [9000, 9002, 9004, 9006, 9008, 9010, 9012, 9014, 9016, 9018, 9020, 9022, 9024, 9026,
@@ -105,8 +106,7 @@ while time.time() < time_constant + execution_time:
         print("\nSkippedIntervals: %s" % skippedIntervals)
 
     # Exel write data
-    data = results_HOT + results_COLD
-    print(blank_row, data)
+    data = results_HOT + results_COLD + time_date
     sheet.cell(blank_row, 1).value = blank_row - 2
     for i, dat in enumerate(data):
         offset = 1 if i > 6 else 0
