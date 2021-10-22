@@ -13,8 +13,8 @@ print("Opened a LabJack with Device type: %i, Connection type: %i,\n"
 
 deviceType = info[0]  # saves the dive type
 intervalHandle = 1  # sets the properties of the in hardware delay
-ljm.startInterval(intervalHandle, 1000000)  # Change the velocity of the readings, every 1000000 that is seconds
-pid_res = PID(0.2, 0.001, 0.005, 50)  # initialize the PID to control the Temperature
+ljm.startInterval(intervalHandle, 60000000)  # Change the velocity of the readings, every 1000000 that is seconds
+pid_res = PID(0.02, 0.0005, 0.0, 20)  # initialize the PID to control the Temperature
 
 # creating the file name.
 date_time = datetime.fromtimestamp(time.time())
@@ -24,13 +24,12 @@ file = f'C:\\Users\\Partenio\\PycharmProjects\\pythonProject1\\Excel\\{date_time
 # creating the sheet.
 wb, sheet = create_load_workbook(file)
 blank_row = 3
-time_date = [datetime.fromtimestamp(time.time())]
 
 # configure the A/D values to read the thermocouples in degrees C.
 aAddresses = [9000, 9002, 9004, 9006, 9008, 9010, 9012, 9014, 9016, 9018, 9020, 9022, 9024, 9026,
               9300, 9302, 9304, 9306, 9308, 9310, 9312, 9314, 9316, 9318, 9320, 9322, 9324, 9326]  # address to write
 aDataTypes = [ljm.constants.UINT32 for _ in aAddresses]
-aValues = [24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+aValues = [22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 24, 24, 22, 22,
            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  # [values to output]
 numFrames = len(aAddresses)
 ljm.eWriteAddresses(handle, numFrames, aAddresses, aDataTypes, aValues)
@@ -46,7 +45,7 @@ write_value = 0
 TEMP_average_HOT = 0.0
 TEMP_average_COLD = 0.0
 time_constant = time.time()
-execution_time = 5  # time for the program to run, change second number to the desire time in minutes.
+execution_time = 60*60  # time for the program to run, change second number to the desire time in minutes.
 # where the values are read, write, print and calculate
 
 while time.time() < time_constant + execution_time:
@@ -105,6 +104,7 @@ while time.time() < time_constant + execution_time:
     if skippedIntervals > 0:
         print("\nSkippedIntervals: %s" % skippedIntervals)
 
+    time_date = [datetime.fromtimestamp(time.time())]
     # Exel write data
     data = results_HOT + results_COLD + time_date
     sheet.cell(blank_row, 1).value = blank_row - 2
