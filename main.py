@@ -14,7 +14,9 @@ print("Opened a LabJack with Device type: %i, Connection type: %i,\n"
 deviceType = info[0]  # saves the dive type
 intervalHandle = 1  # sets the properties of the in hardware delay
 ljm.startInterval(intervalHandle, 60000000)  # Change the velocity of the readings, every 1000000 that is seconds
-pid_res = PID(0.02, 0.0005, 0.0, 20)  # initialize the PID to control the Temperature
+
+# initialize the PID to control the Temperature
+pid_res = PID(0.02, 0.0005, 0.0, 20)
 
 # creating the file name.
 date_time = datetime.fromtimestamp(time.time())
