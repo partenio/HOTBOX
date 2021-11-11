@@ -1,4 +1,5 @@
 from Temperatura import temp_calculation
+from Temperatura import  heat_flux
 from Exel import create_load_workbook
 from datetime import datetime
 from labjack import ljm
@@ -18,6 +19,7 @@ ljm.startInterval(intervalHandle, 60000000)  # Change the velocity of the readin
 # initialize the PID to control the Temperature
 pid_res = PID(0.02, 0.0005, 0.0, 20)
 
+
 # creating the file name.
 date_time = datetime.fromtimestamp(time.time())
 date_time = str(date_time).replace(':', '-').split('.')[0]
@@ -27,11 +29,11 @@ file = f'C:\\Users\\Partenio\\PycharmProjects\\pythonProject1\\Excel\\{date_time
 wb, sheet = create_load_workbook(file)
 blank_row = 3
 
-# configure the A/D values to read the thermocouples in degrees C.
-aAddresses = [9000, 9002, 9004, 9006, 9008, 9010, 9012, 9014, 9016, 9018, 9020, 9022, 9024, 9026,
-              9300, 9302, 9304, 9306, 9308, 9310, 9312, 9314, 9316, 9318, 9320, 9322, 9324, 9326]  # address to write
+# configure the A/D values to read the thermocouples in degrees C the to ani0 and ain1 are the voltage values for the heat flux.
+aAddresses = [9004, 9006, 9008, 9010, 9012, 9014, 9016, 9018, 9020, 9022, 9024, 9026,
+              9304, 9306, 9308, 9310, 9312, 9314, 9316, 9318, 9320, 9322, 9324, 9326]  # address to write
 aDataTypes = [ljm.constants.UINT32 for _ in aAddresses]
-aValues = [22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 24, 24, 22, 22,
+aValues = [22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22,
            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  # [values to output]
 numFrames = len(aAddresses)
 ljm.eWriteAddresses(handle, numFrames, aAddresses, aDataTypes, aValues)
@@ -47,13 +49,13 @@ write_value = 0
 TEMP_average_HOT = 0.0
 TEMP_average_COLD = 0.0
 time_constant = time.time()
-execution_time = 60*60  # time for the program to run, change second number to the desire time in minutes.
+execution_time = 60*1  # time for the program to run, change second number to the desire time in minutes.
 # where the values are read, write, print and calculate
 
 while time.time() < time_constant + execution_time:
 
     # set the inputs to read: HOTBOX
-    aAddresses = [7000, 7002, 7004, 7006, 7008, 7010, 7012]  # [see addresses in https://labjack.com/support/software/api/modbus/modbus-map]
+    aAddresses = [0, 2, 7004, 7006, 7008, 7010, 7012]  # [see addresses in https://labjack.com/support/software/api/modbus/modbus-map]
     aDataTypes = [ljm.constants.FLOAT32 for _ in aAddresses]
     numFrames = len(aAddresses)
     results_HOT = ljm.eReadAddresses(handle, numFrames, aAddresses, aDataTypes)
@@ -65,10 +67,13 @@ while time.time() < time_constant + execution_time:
               (aAddresses[i], aDataTypes[i], results_HOT[i]))
 
     TEMP_average_HOT = sum(results_HOT)/numFrames
+    heatflux_21680 = heat_flux(results_HOT[2], results_HOT[0], 1.34)
+    heatflux_21681 = heat_flux(results_HOT[3], results_HOT[1], 1.35)
 
     # send the average of the data values to PID calculations
     write_value = pid_res.output(TEMP_average_HOT / numFrames)
     print("pid working:", write_value)  # Print the value for debugging
+    print("heat_flux:", heatflux_21680)
 
     # write the PID calculate value in the DAC of the Data logger
     aAddresses = [1000, 1002]  # [DAC0]
