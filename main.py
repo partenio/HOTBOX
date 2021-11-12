@@ -55,7 +55,7 @@ execution_time = 60*1  # time for the program to run, change second number to th
 while time.time() < time_constant + execution_time:
 
     # set the inputs to read: HOTBOX
-    aAddresses = [0, 2, 7004, 7006, 7008, 7010, 7012]  # [see addresses in https://labjack.com/support/software/api/modbus/modbus-map]
+    aAddresses = [0, 2, 7004, 7006, 7008, 7010, 7012, 7014, 7016, 7018]  # 6 termocuplas [see addresses in https://labjack.com/support/software/api/modbus/modbus-map]
     aDataTypes = [ljm.constants.FLOAT32 for _ in aAddresses]
     numFrames = len(aAddresses)
     results_HOT = ljm.eReadAddresses(handle, numFrames, aAddresses, aDataTypes)
@@ -73,7 +73,8 @@ while time.time() < time_constant + execution_time:
     # send the average of the data values to PID calculations
     write_value = pid_res.output(TEMP_average_HOT / numFrames)
     print("pid working:", write_value)  # Print the value for debugging
-    print("heat_flux:", heatflux_21680)
+    print("heat_flux_1:", heatflux_21680)
+    print("heat_flux_2:", heatflux_21681)
 
     # write the PID calculate value in the DAC of the Data logger
     aAddresses = [1000, 1002]  # [DAC0]
@@ -89,7 +90,7 @@ while time.time() < time_constant + execution_time:
               (aAddresses[i], aDataTypes[i], aValues[i]))
 
     # set the inputs to read: COLDBOX
-    aAddresses = [7014, 7016, 7018, 7020, 7022, 7024, 7026]  # [see addresses in https://labjack.com/support/software/api/modbus/modbus-map]
+    aAddresses = [7020, 7022, 7024, 7026]  # [see addresses in https://labjack.com/support/software/api/modbus/modbus-map]
     aDataTypes = [ljm.constants.FLOAT32 for _ in aAddresses]
     numFrames = len(aAddresses)
     results_COLD = ljm.eReadAddresses(handle, numFrames, aAddresses, aDataTypes)
