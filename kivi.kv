@@ -1,0 +1,199 @@
+FloatLayout:
+
+################ lyout################
+    MDFlatButton:
+        text: "Camara caliente"
+        pos_hint: {'x': 0.02, 'y': 0.35}
+        size_hint: .35,.6
+        theme_text_color: "Custom"
+        line_color: 0, 0, 0, 1
+        text_color: 0, 0, 0, 1
+    
+    MDFlatButton:
+        text: "Camara fria"
+        pos_hint: {'x': 0.63, 'y': 0.35}
+        size_hint: .35,.6
+        theme_text_color: "Custom"
+        line_color: 0, 0, 0, 1
+        text_color: 0, 0, 0, 1
+
+    MDFlatButton:
+        text: "Muestra"
+        pos_hint: {'x': 0.4, 'y': 0.35}
+        size_hint: 0.2,0.33
+        theme_text_color: "Custom"
+        line_color: 0, 0, 0, 1
+        text_color: 0, 0, 0, 1
+
+    MDProgressBar:
+        id: Time_left
+        pos_hint: {'x': 0.40, 'y': 0.60}
+        min: 0
+        max:60
+        size_hint: .2,.5
+        color: 0, 0, 0, 1
+    
+    MDLabel:
+        text: "Tiempo de mustreo"
+        pos_hint: {'x': 0.45, 'y': 0.85}
+        size_hint: 0.1,0.1
+        halign: "center"
+        theme_text_color: "Custom"
+        text_color: 0, 0, 0, 1
+
+    Image:
+        id: plot
+        source: '/home/partenio/Desktop/HOTBOX/output.png'
+        size_hint: 0.37, 0.37
+        pos_hint: {'x': 0.31, 'y': 0.0}
+
+
+################## HOT ###################
+
+    MDLabel:
+        id: flujo_derecha
+        pos_hint: {'x': 0.31, 'y': 0.60}
+        size_hint: 0.05,0.05
+        halign: "center"
+        md_bg_color: 0.1, 0.1, 0.1, 1
+        theme_text_color: "Custom"
+        line_color: 0, 0, 0, 1
+        text_color: 1, 1, 1, 1
+
+    MDLabel:
+        id: flujo_izquierda
+        pos_hint: {'x': 0.03, 'y': 0.60}
+        size_hint: 0.05,0.05
+        halign: "center"
+        md_bg_color: 0.1, 0.1, 0.1, 1
+        theme_text_color: "Custom"
+        line_color: 0, 0, 0, 1
+        text_color: 1, 1, 1, 1
+
+    MDLabel:
+        id: flujo_Temp_derecha
+        pos_hint: {'x': 0.31, 'y': 0.65}
+        size_hint: 0.05,0.05
+        halign: "center"
+        md_bg_color: 0.1, 0.1, 0.1, 1
+        theme_text_color: "Custom"
+        line_color: 0, 0, 0, 1
+        text_color: 1, 1, 1, 1
+
+    MDLabel:
+        id: flujo_Temp_izquierda
+        pos_hint: {'x': 0.03, 'y': 0.65}
+        size_hint: 0.05,0.05
+        halign: "center"
+        md_bg_color: 0.1, 0.1, 0.1, 1
+        theme_text_color: "Custom"
+        line_color: 0, 0, 0, 1
+        text_color: 1, 1, 1, 1
+    
+    MDLabel:
+        id: abajo_centro
+        halign: "center"
+        pos_hint: {'x': 0.17, 'y': 0.36}
+        size_hint: 0.05,0.1
+        halign: "center"
+        md_bg_color: 0.1, 0.1, 0.1, 1
+        theme_text_color: "Custom"
+        line_color: 0, 0, 0, 1
+        text_color: 1, 1, 1, 1
+
+    MDLabel:
+        id: arriba_centro
+        pos_hint: {'x': 0.17, 'y': 0.83}
+        size_hint: 0.05,0.1
+        halign: "center"
+        md_bg_color: 0.1, 0.1, 0.1, 1
+        theme_text_color: "Custom"
+        line_color: 0, 0, 0, 1
+        text_color: 1, 1, 1, 1
+
+    MDLabel:
+        id: abajo_izquierda
+        pos_hint: {'x': 0.03, 'y': 0.36}
+        size_hint: 0.05,0.1
+        halign: "center"
+        md_bg_color: 0.1, 0.1, 0.1, 1
+        theme_text_color: "Custom"
+        line_color: 0, 0, 0, 1
+        text_color: 1, 1, 1, 1
+
+    MDLabel:
+        id: arriba_derecha
+        pos_hint: {'x': 0.31, 'y': 0.83}
+        size_hint: 0.05,0.1
+        halign: "center"
+        md_bg_color: 0.1, 0.1, 0.1, 1
+        theme_text_color: "Custom"
+        line_color: 0, 0, 0, 1
+        text_color: 1, 1, 1, 1
+
+ 
+
+################## MUESRTA ###################
+
+    MDLabel:
+        id: Muestra_arriba_calinete 
+        pos_hint: {'x': 0.475, 'y': 0.62}
+        size_hint: 0.05,0.05
+        halign: "center"
+        md_bg_color: 0.1, 0.1, 0.1, 1
+        theme_text_color: "Custom"
+        line_color: 0, 0, 0, 1
+        text_color: 1, 1, 1, 1
+
+    MDLabel:
+        id: Muestra_abajo_calinete 
+        pos_hint: {'x': 0.475, 'y': 0.41}
+        size_hint: 0.05,0.05
+        halign: "center"
+        md_bg_color: 0.1, 0.1, 0.1, 1
+        theme_text_color: "Custom"
+        line_color: 0, 0, 0, 1
+        text_color: 1, 1, 1, 1
+
+    MDLabel:
+        id: Muestra_abajo_fria
+        pos_hint: {'x': 0.475, 'y': 0.36}
+        size_hint: 0.05,0.05
+        halign: "center"
+        md_bg_color: 0.1, 0.1, 0.1, 1
+        theme_text_color: "Custom"
+        line_color: 0, 0, 0, 1
+        text_color: 1, 1, 1, 1
+
+    MDLabel:
+        id: Muestra_arriba_fria
+        pos_hint: {'x': 0.475, 'y': 0.57}
+        size_hint: 0.05,0.05
+        halign: "center"
+        md_bg_color: 0.1, 0.1, 0.1, 1
+        theme_text_color: "Custom"
+        line_color: 0, 0, 0, 1
+        text_color: 1, 1, 1, 1
+
+################## FIRO ###################
+
+    MDLabel:
+        id: abajo_centro_frio
+        halign: "center"
+        pos_hint: {'x': 0.64, 'y': 0.60}
+        size_hint: 0.05,0.1
+        halign: "center"
+        md_bg_color: 0.1, 0.1, 0.1, 1
+        theme_text_color: "Custom"
+        line_color: 0, 0, 0, 1
+        text_color: 1, 1, 1, 1
+
+    MDLabel:
+        id: arriba_centro_frio
+        pos_hint: {'x': 0.92, 'y': 0.60}
+        size_hint: 0.05,0.1
+        halign: "center"
+        md_bg_color: 0.1, 0.1, 0.1, 1
+        theme_text_color: "Custom"
+        line_color: 0, 0, 0, 1
+        text_color: 1, 1, 1, 1

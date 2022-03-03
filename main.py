@@ -6,7 +6,7 @@ from labjack import ljm
 from PID import PID
 import time
 
-handle = ljm.openS("T7", "ANY", "ANY")  # T7 device, Any connection, Any identifier
+handle = ljm.openS("ANY", "ANY", "ANY")  # T7 device, Any connection, Any identifier
 info = ljm.getHandleInfo(handle)
 print("Opened a LabJack with Device type: %i, Connection type: %i,\n"
       "Serial number: %i, IP address: %s, Port: %i,\nMax bytes per MB: %i" %
@@ -14,7 +14,7 @@ print("Opened a LabJack with Device type: %i, Connection type: %i,\n"
 
 deviceType = info[0]  # saves the dive type
 intervalHandle = 1  # sets the properties of the in hardware delay
-ljm.startInterval(intervalHandle, 60000000)  # Change the velocity of the readings, every 1000000 that is seconds
+ljm.startInterval(intervalHandle, 1000000)  # Change the velocity of the readings, every 1000000 that is seconds
 
 # initialize the PID to control the Temperature
 pid_res = PID(0.02, 0.0005, 0.0, 20)
@@ -23,11 +23,10 @@ pid_res = PID(0.02, 0.0005, 0.0, 20)
 # creating the file name.
 date_time = datetime.fromtimestamp(time.time())
 date_time = str(date_time).replace(':', '-').split('.')[0]
-file = f'C:\\Users\\Partenio\\PycharmProjects\\pythonProject1\\Excel\\{date_time}.xlsx'
+file = f'/home/partenio/Desktop/HOTBOX/Excel/{date_time}.xlsx'
 
 # creating the sheet.
 wb, sheet = create_load_workbook(file)
-blank_row = 3
 
 # configure the A/D values to read the thermocouples in degrees C the to ani0 and ain1 are the voltage values for the heat flux.
 aAddresses = [9004, 9006, 9008, 9010, 9012, 9014, 9016, 9018, 9020, 9022, 9024, 9026,
@@ -52,7 +51,11 @@ time_constant = time.time()
 execution_time = 60*1  # time for the program to run, change second number to the desire time in minutes.
 # where the values are read, write, print and calculate
 
-while time.time() < time_constant + execution_time:
+
+def run_time(loading_time =0, blank_row = 3):
+    
+
+    loading_time += 1
 
     # set the inputs to read: HOTBOX
     aAddresses = [0, 2, 7004, 7006, 7008, 7010, 7012, 7014, 7016, 7018]  # 6 termocuplas [see addresses in https://labjack.com/support/software/api/modbus/modbus-map]
@@ -114,10 +117,14 @@ while time.time() < time_constant + execution_time:
 
     time_date = [datetime.fromtimestamp(time.time())]
     # Exel write data
-    data = results_HOT + results_COLD + time_date
+    data = results_HOT[2:] + results_COLD + time_date
     sheet.cell(blank_row, 1).value = blank_row - 2
     for i, dat in enumerate(data):
         offset = 1 if i > 6 else 0
         sheet.cell(blank_row, i + offset + 2).value = dat
+    adjusted_width = (len (time_date) + 2) * 1.2
+    #sheet.column_dimensions['17'].width = int(adjusted_width)
     wb.save(file)
     blank_row += 1
+
+
