@@ -1,11 +1,15 @@
-from Temperatura import temp_calculation
-from Temperatura import  heat_flux
-from Exel import create_load_workbook
-from datetime import datetime
-from labjack import ljm
-from PID import PID
 import time
 
+from PI_try_conductivity import control_math 
+from Temperatura import temp_calculation
+from Exel import create_load_workbook
+from Temperatura import  heat_flux
+from datetime import datetime
+from labjack import ljm
+
+
+
+# setting the Datalogger
 handle = ljm.openS("ANY", "ANY", "ANY")  # T7 device, Any connection, Any identifier
 info = ljm.getHandleInfo(handle)
 print("Opened a LabJack with Device type: %i, Connection type: %i,\n"
@@ -15,10 +19,6 @@ print("Opened a LabJack with Device type: %i, Connection type: %i,\n"
 deviceType = info[0]  # saves the dive type
 intervalHandle = 1  # sets the properties of the in hardware delay
 ljm.startInterval(intervalHandle, 1000000)  # Change the velocity of the readings, every 1000000 that is seconds
-
-# initialize the PID to control the Temperature
-pid_res = PID(0.02, 0.0005, 0.0, 20)
-
 
 # creating the file name.
 date_time = datetime.fromtimestamp(time.time())
@@ -32,8 +32,9 @@ wb, sheet = create_load_workbook(file)
 aAddresses = [9004, 9006, 9008, 9010, 9012, 9014, 9016, 9018, 9020, 9022, 9024, 9026,
               9304, 9306, 9308, 9310, 9312, 9314, 9316, 9318, 9320, 9322, 9324, 9326]  # address to write
 aDataTypes = [ljm.constants.UINT32 for _ in aAddresses]
+# [setting thermocuples type K (asumming all of them are type K)]
 aValues = [22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22,
-           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  # [values to output]
+           1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  
 numFrames = len(aAddresses)
 ljm.eWriteAddresses(handle, numFrames, aAddresses, aDataTypes, aValues)
 
@@ -45,20 +46,20 @@ for i in range(numFrames):
 
 # custom variables
 write_value = 0
+blank_row = 3
 TEMP_average_HOT = 0.0
 TEMP_average_COLD = 0.0
 time_constant = time.time()
-execution_time = 60*1  # time for the program to run, change second number to the desire time in minutes.
+execution_time = 60*240 # time for the program to run, 
+#change second number to the desire time in minutes, We recomend of 4.
+t_end = time.time() + execution_time #creating the timmer
+
 # where the values are read, write, print and calculate
 
-
-def run_time(loading_time =0, blank_row = 3):
-    
-
-    loading_time += 1
+while time.time() < t_end:
 
     # set the inputs to read: HOTBOX
-    aAddresses = [0, 2, 7004, 7006, 7008, 7010, 7012, 7014, 7016, 7018]  # 6 termocuplas [see addresses in https://labjack.com/support/software/api/modbus/modbus-map]
+    aAddresses = [0, 2, 7004, 7012, 7014, 7018, 7020, 7022, 7024, 7026]  # 6 termocuplas [see addresses in https://labjack.com/support/software/api/modbus/modbus-map]
     aDataTypes = [ljm.constants.FLOAT32 for _ in aAddresses]
     numFrames = len(aAddresses)
     results_HOT = ljm.eReadAddresses(handle, numFrames, aAddresses, aDataTypes)
@@ -69,12 +70,12 @@ def run_time(loading_time =0, blank_row = 3):
         print("    Address - %i, data type - %i, value : %f" %
               (aAddresses[i], aDataTypes[i], results_HOT[i]))
 
-    TEMP_average_HOT = sum(results_HOT)/numFrames
+    TEMP_average_HOT = sum(results_HOT [2:] )/numFrames
     heatflux_21680 = heat_flux(results_HOT[2], results_HOT[0], 1.34)
     heatflux_21681 = heat_flux(results_HOT[3], results_HOT[1], 1.35)
 
     # send the average of the data values to PID calculations
-    write_value = pid_res.output(TEMP_average_HOT / numFrames)
+    write_value = control_math(TEMP_average_HOT)
     print("pid working:", write_value)  # Print the value for debugging
     print("heat_flux_1:", heatflux_21680)
     print("heat_flux_2:", heatflux_21681)
@@ -110,6 +111,8 @@ def run_time(loading_time =0, blank_row = 3):
     TEMP_average_COLD = 0  # reset the variable to rerun the loop
     TEMP_average_HOT = 0  # reset the variable to rerun the loop
 
+    print("--------------")
+
     # Repeat every 1 second, in hardware delay
     skippedIntervals = ljm.waitForNextInterval(intervalHandle)
     if skippedIntervals > 0:
@@ -123,7 +126,6 @@ def run_time(loading_time =0, blank_row = 3):
         offset = 1 if i > 6 else 0
         sheet.cell(blank_row, i + offset + 2).value = dat
     adjusted_width = (len (time_date) + 2) * 1.2
-    #sheet.column_dimensions['17'].width = int(adjusted_width)
     wb.save(file)
     blank_row += 1
 
