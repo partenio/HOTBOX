@@ -7,9 +7,9 @@ from Exel import create_load_workbook
 from test_plot import plot_temp
 from datetime import datetime
 from labjack import ljm
-from PID import PID
 import time
 
+from PI_try_conductivity import control_math 
 from kivymd.app import MDApp
 from kivy.clock import Clock
 from kivy.lang import Builder
@@ -31,7 +31,7 @@ class Hotbox(MDApp):
         self.blank_row = 3
         self.time_constant = time.time()
         self.temp_polt = [] 
-        self.execution_time = 60*1  # time for the program to run, change second number to the desire time in minutes.
+        self.execution_time = 60*120  # time for the program to run, change second number to the desire time in minutes.
         # where the values are read, write,
 
         self.loading_time = 0
@@ -41,12 +41,13 @@ class Hotbox(MDApp):
         ljm.startInterval(self.intervalHandle, 1000000)  # Change the velocity of the readings, every 1000000 that is seconds
 
         # initialize the PID to control the Temperature
-        self.pid_res = PID(0.02, 0.0005, 0.0, 20)
+        
 
         # creating the file name.
         date_time = datetime.fromtimestamp(time.time())
         date_time = str(date_time).replace(':', '-').split('.')[0]
         self.file = f'/home/partenio/Desktop/HOTBOX/Excel/{date_time}.xlsx'
+        
         # creating the sheet.
         self.wb, self.sheet = create_load_workbook(self.file)
         self.timer = Clock.schedule_interval(self.run_time, 1)
@@ -84,7 +85,7 @@ class Hotbox(MDApp):
         self.plot_time.append(self.loading_time)
 
         # set the inputs to read: HOTBOX
-        aAddresses = [0, 2, 7004, 7006, 7008, 7010, 7012, 7014, 7016, 7018]  # 6 termocuplas [see addresses in https://labjack.com/support/software/api/modbus/modbus-map]
+        aAddresses = [0, 2, 7004, 7012, 7014, 7018, 7020, 7022, 7024, 7026]  # 6 termocuplas [see addresses in https://labjack.com/support/software/api/modbus/modbus-map]
         aDataTypes = [ljm.constants.FLOAT32 for _ in aAddresses]
         numFrames = len(aAddresses)
         self.results_HOT  = ljm.eReadAddresses(self.handle, numFrames, aAddresses, aDataTypes)
@@ -95,13 +96,14 @@ class Hotbox(MDApp):
             print("    Address - %i, data type - %i, value : %f" %
                 (aAddresses[i], aDataTypes[i], self.results_HOT [i]))
 
-        TEMP_average_HOT = sum(self.results_HOT )/numFrames
+        TEMP_average_HOT = sum(self.results_HOT [2:] )/numFrames
         self.temp_polt.append(TEMP_average_HOT)
         self.heatflux_21680 = heat_flux(self.results_HOT [2], self.results_HOT [0], 1.34)
         self.heatflux_21681 = heat_flux(self.results_HOT [3], self.results_HOT [1], 1.35)
 
         # send the average of the data values to PID calculations
-        write_value = self.pid_res.output(TEMP_average_HOT / numFrames)
+        write_value = control_math(TEMP_average_HOT)
+        print("...")
         print("pid working:", write_value)  # Print the value for debugging
         print("heat_flux_1:", self.heatflux_21680)
         print("heat_flux_2:", self.heatflux_21681)
@@ -119,13 +121,13 @@ class Hotbox(MDApp):
             print("    Address - %i, data type - %i, value : %f" %
                 (aAddresses[i], aDataTypes[i], aValues[i]))
 
-        # set the inputs to read: COLDBOX
+        #set the inputs to read: COLDBOX
         aAddresses = [7020, 7022, 7024, 7026]  # [see addresses in https://labjack.com/support/software/api/modbus/modbus-map]
         aDataTypes = [ljm.constants.FLOAT32 for _ in aAddresses]
         numFrames = len(aAddresses)
         self.results_COLD = ljm.eReadAddresses(self.handle, numFrames, aAddresses, aDataTypes)
 
-        # seeing the read values of temperature
+        #seeing the read values of temperature
         print("\neReadAddresses results: ")
         for i in range(numFrames):
             print("    Address - %i, data type - %i, value : %f" %
