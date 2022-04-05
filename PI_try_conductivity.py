@@ -14,8 +14,8 @@ def control_math(input):
     #print(G)
 
     #feedback with the input
-    error = 50 - input
-    print(error)
+    error = 52 - input
+    print("error:",error)
 
     #multiplication with the setpoint
     if error < 1:

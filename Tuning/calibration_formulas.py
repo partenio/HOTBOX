@@ -12,7 +12,7 @@ for d in np.arange(20, 60):
 
     G = control.tf([0.002631, 11.35], [0.0003938, 1.003, 11.95])
 
-    error = 50 - d
+    error =52.6 - d
     print(error)
 
     if error < 1:
