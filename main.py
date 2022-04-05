@@ -2,7 +2,8 @@ import time
 
 from PI_try_conductivity import control_math 
 from Temperatura import temp_calculation
-from Exel import create_load_workbook
+from Exel import persist_data
+from Exel import create_file
 from Temperatura import  heat_flux
 from datetime import datetime
 from labjack import ljm
@@ -21,17 +22,18 @@ ljm.startInterval(intervalHandle, 1000000)  # Change the velocity of the reading
 # creating the file name.
 date_time = datetime.fromtimestamp(time.time())
 date_time = str(date_time).replace(':', '-').split('.')[0]
-file = f'/home/partenio/Desktop/HOTBOX/Excel/{date_time}.xlsx'
+file = f'/home/partenio/Desktop/HOTBOX/Excel/{date_time}.csv'
 
-# creating the sheet.
-wb, sheet = create_load_workbook(file)
+#cretae file
+
+create_file(file)
 
 # configure the A/D values to read the thermocouples in degrees C the to ani0 and ain1 are the voltage values for the heat flux.
 aAddresses = [9004, 9006, 9008, 9010, 9012, 9014, 9016, 9018, 9020, 9022, 9024, 9026,
               9304, 9306, 9308, 9310, 9312, 9314, 9316, 9318, 9320, 9322, 9324, 9326]  # address to write 11 cus the to first are voltage reades for the heatflux
 aDataTypes = [ljm.constants.UINT32 for _ in aAddresses]
 # [setting thermocuples (Thermocuples))]
-aValues = [24, 24, 22, 22, 22, 22, 22, 24, 24, 22, 22, 22,
+aValues = [24, 24, 22, 24, 22, 22, 24, 24, 24, 22, 22, 22,
            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]  
 numFrames = len(aAddresses)
 ljm.eWriteAddresses(handle, numFrames, aAddresses, aDataTypes, aValues)
@@ -44,15 +46,14 @@ for i in range(numFrames):
 
 # custom variables
 write_value = 0
-blank_row = 3
 TEMP_average_HOT = 0.0
 TEMP_average_COLD = 0.0
-time_constant = time.time()
-execution_time = 60*300 # time for the program to run, 
+execution_time = 60*30000 # time for the program to run, 
 #change second number to the desire time in minutes, We recomend of 4.
 
 end = True
 write_exel = False
+flag_timer = True
 
 # where the values are read, write, print and calculate
 
@@ -83,9 +84,9 @@ while end:
     print("heat_flux_2:", heatflux_21681)
 
     # write the PID calculate value in the DAC of the Data logger
-    aAddresses = [1000, 1002]  # [DAC0]
+    aAddresses = [1000]  # [DAC0]
     aDataTypes = [ljm.constants.FLOAT32 for _ in aAddresses]  # data type
-    aValues = [write_value, 5]  # [write of output]
+    aValues = [write_value]  # [write of output]
     numFrames = len(aAddresses)
     ljm.eWriteAddresses(handle, numFrames, aAddresses, aDataTypes, aValues)
 
@@ -96,7 +97,7 @@ while end:
               (aAddresses[i], aDataTypes[i], aValues[i]))
 
     # set the inputs to read: COLDBOX
-    aAddresses = [7008, 7010, 70016]  # [see addresses in https://labjack.com/support/software/api/modbus/modbus-map]
+    aAddresses = [7008, 7010, 7016]  # [see addresses in https://labjack.com/support/software/api/modbus/modbus-map]
     aDataTypes = [ljm.constants.FLOAT32 for _ in aAddresses]
     numFrames = len(aAddresses)
     results_COLD = ljm.eReadAddresses(handle, numFrames, aAddresses, aDataTypes)
@@ -110,32 +111,35 @@ while end:
     TEMP_average_COLD = sum(results_COLD[1:])/numFrames-1
 
     if write_exel:
-        temp_calculation(TEMP_average_HOT, TEMP_average_COLD)
+        temp_calculation(TEMP_average_HOT, TEMP_average_COLD, heatflux_21681)
         TEMP_average_COLD = 0  # reset the variable to rerun the loop
         TEMP_average_HOT = 0  # reset the variable to rerun the loop
 
         print("--------------")
 
-        time_date = [datetime.fromtimestamp(time.time())]
+        time_date = datetime.fromtimestamp(time.time())
         # Exel write data
-        data = results_HOT[2:] + results_COLD + time_date
-        sheet.cell(blank_row, 1).value = blank_row - 2
-        for i, dat in enumerate(data):
-            offset = 1 if i > 6 else 0
-            sheet.cell(blank_row, i + offset + 2).value = dat
-        adjusted_width = (len (time_date) + 2) * 1.2
-        wb.save(file)
-        blank_row += 1
+        data = results_HOT[2:] + results_COLD
+
+        dict_data ={}
+        dict_data["tiempo"] = time_date.strftime("%Y-%m-%d %H:%M:%S")
+        dict_data['space'] = " "
+        for i, dat in enumerate(data,1):
+            dict_data[f"temp_{i}"] = dat
+        persist_data(dict_data, file)
     
     # Repeat every 1 second, in hardware delay
     skippedIntervals = ljm.waitForNextInterval(intervalHandle)
     if skippedIntervals > 0:
         print("\nSkippedIntervals: %s" % skippedIntervals)
     
-    if TEMP_average_HOT > 49.60:
-        t_end = time.time() + execution_time #creating the timmer
-        write_exel = True
+    if TEMP_average_HOT > 49.6:
+        if flag_timer:
+            t_end = time.time() + execution_time #creating the timmer
+            write_exel = True
+            flag_timer = False
         if time.time() >= t_end:
             end = False
+            print("bye")
 
 
