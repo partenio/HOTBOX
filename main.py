@@ -17,7 +17,7 @@ print("Opened a LabJack with Device type: %i, Connection type: %i,\n"
 
 deviceType = info[0]  # saves the dive type
 intervalHandle = 1  # sets the properties of the in hardware delay
-ljm.startInterval(intervalHandle, 1000000)  # Change the velocity of the readings, every 1000000 that is seconds
+ljm.startInterval(intervalHandle, 60000000)  # Change the velocity of the readings, every 1000000 that is seconds
 
 # creating the file name.
 date_time = datetime.fromtimestamp(time.time())
@@ -52,7 +52,7 @@ execution_time = 60*30000 # time for the program to run,
 #change second number to the desire time in minutes, We recomend of 4.
 
 end = True
-write_exel = False
+write_exel = True
 flag_timer = True
 
 # where the values are read, write, print and calculate
@@ -73,15 +73,16 @@ while end:
               (aAddresses[i], aDataTypes[i], results_HOT[i]))
 
     TEMP_average_HOT = sum(results_HOT [2:] )/(numFrames-2)
-    heatflux_21680 = heat_flux(results_HOT[2], -results_HOT[0], 1.34)
-    heatflux_21681 = heat_flux(results_HOT[3], -results_HOT[1], 1.35)
+
+
+    #heatflux_21681 = heat_flux(results_HOT[3], -100*results_HOT[1], 1.35)
 
     # send the average of the data values to PID calculations
     write_value = control_math(TEMP_average_HOT)
     print("Average:", TEMP_average_HOT)
     print("pid working:", write_value)  # Print the value for debugging
-    print("heat_flux_1:", heatflux_21680)
-    print("heat_flux_2:", heatflux_21681)
+    #print("heat_flux_1:", heatflux_21680)
+    #print("heat_flux_2:", heatflux_21681)
 
     # write the PID calculate value in the DAC of the Data logger
     aAddresses = [1000]  # [DAC0]
@@ -108,10 +109,20 @@ while end:
         print("    Address - %i, data type - %i, value : %f" %
               (aAddresses[i], aDataTypes[i], results_COLD[i]))
 
-    TEMP_average_COLD = sum(results_COLD[1:])/numFrames-1
+    TEMP_average_COLD = (results_COLD[1]+results_COLD[2])/2
+
+    heatflux_temp = ((results_HOT[2]+results_HOT[3])/2)-TEMP_average_COLD
+    print("heatflux_temp_hot", (results_HOT[2]+results_HOT[3])/2)
+    print("heatflux_temp_cold", (TEMP_average_COLD))
+    print("heatflux_temp", heatflux_temp)
+
+    heatflux_21680 = heat_flux(heatflux_temp, -100*results_HOT[0], 1.34)
+    print("heat_flux_2:", heatflux_21680)
+
+    heat = [heatflux_21680]
 
     if write_exel:
-        temp_calculation(TEMP_average_HOT, TEMP_average_COLD, heatflux_21681)
+        temp_calculation(heatflux_temp, TEMP_average_COLD, heatflux_21680)
         TEMP_average_COLD = 0  # reset the variable to rerun the loop
         TEMP_average_HOT = 0  # reset the variable to rerun the loop
 
@@ -119,7 +130,7 @@ while end:
 
         time_date = datetime.fromtimestamp(time.time())
         # Exel write data
-        data = results_HOT[2:] + results_COLD
+        data = results_HOT[2:] + results_COLD + heat
 
         dict_data ={}
         dict_data["tiempo"] = time_date.strftime("%Y-%m-%d %H:%M:%S")
